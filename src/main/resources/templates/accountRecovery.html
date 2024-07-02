@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>계정 복구</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FDFDFD;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #FFF9E6;
+            border: 1px solid #EAEAEA;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .header h1 {
+            margin: 0;
+            color: #FFD700;
+            background-color:#FFFFFF;
+            border-radius: 25px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px 0;
+            text-align: center;
+            background-color: #FFD700;
+            color: #FFF;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #AAA;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>계정 복구</h1>
+    </div>
+    <div class="content">
+
+        <p>안녕하세요,</p>
+        <p>고객님의 계정 복구 요청을 받았습니다.</p>
+        <p>이 요청을 하지 않으셨다면 이 이메일을 무시해주세요.</p>
+        <p>계정을 복구하려면 아래 버튼을 클릭해주세요.</p>
+        <a th:href="${verification_url}" class="button">계정 복구</a>
+        <p>감사합니다,<br>book-store 지원팀</p>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 book-store. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
