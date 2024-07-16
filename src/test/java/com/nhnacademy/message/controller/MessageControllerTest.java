@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -39,7 +38,7 @@ class MessageControllerTest {
         String email = "user@example.com";
         String expectedResponse = "Recovery email sent successfully.";
 
-        when(messageService.sendRecoverMail(eq(email))).thenReturn(expectedResponse);
+        when(messageService.sendRecoverMail(email)).thenReturn(expectedResponse);
 
         mockMvc.perform(get("/send/recover-account")
                         .param("email", email)
@@ -53,7 +52,7 @@ class MessageControllerTest {
         String email = "user@example.com";
         String expectedResponse = "Change password email sent successfully.";
 
-        when(messageService.sendChangePasswordMail(eq(email))).thenReturn(expectedResponse);
+        when(messageService.sendChangePasswordMail(email)).thenReturn(expectedResponse);
 
         mockMvc.perform(get("/send/change-password")
                         .param("email", email)
