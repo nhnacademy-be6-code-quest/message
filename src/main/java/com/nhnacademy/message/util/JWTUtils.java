@@ -2,6 +2,7 @@ package com.nhnacademy.message.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,16 +15,11 @@ import java.util.List;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JWTUtils {
     private final SecretKey secretKey;
-    private final Long expiredMs;
-
-    public JWTUtils(
-            @Value("${spring.jwt.secret}")String secret,
-            @Value("${spring.jwt.access.expiredMs}")Long expiredMs) {
-        secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
-        this.expiredMs = expiredMs;
-    }
+    @Value("${spring.jwt.access.expiredMs}")
+    private Long expiredMs;
 
     public String getCategory(String token) {
         return getClaimsFromToken(token).get("category", String.class);
