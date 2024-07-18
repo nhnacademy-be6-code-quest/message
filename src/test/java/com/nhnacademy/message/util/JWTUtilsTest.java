@@ -1,73 +1,61 @@
 package com.nhnacademy.message.util;
 
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@TestPropertySource(properties = {
-        "spring.jwt.secret=01234567890123456789012345678901",
-        "spring.jwt.access.expiredMs=604800000" // in milliseconds
-})
+import static org.junit.jupiter.api.Assertions.*;
+
 class JWTUtilsTest {
 
-    @Value("${spring.jwt.secret}")
-    private String secret;
-
-    @Value("${spring.jwt.access.expiredMs}")
-    private Long accessExpiredMs;
-
     private JWTUtils jwtUtils;
+    private final String secretKeyString = "thisIsAVeryLongSecretKeyForTestingPurposes";
+    private final SecretKey secretKey = new SecretKeySpec(secretKeyString.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 
     @BeforeEach
     void setUp() {
-        jwtUtils = new JWTUtils(secret, accessExpiredMs);
+        jwtUtils = new JWTUtils(secretKey);
+        ReflectionTestUtils.setField(jwtUtils, "expiredMs", 3600000L); // 1 hour
     }
 
     @Test
-    void testCreateJwt() {
-        String email = "123e4567-e89b-12d3-a456-426614174000";
+    void testCreateAndParseJwt() {
+        String category = "user";
+        String email = "test@example.com";
 
-        String token = jwtUtils.createJwt("test", email);
+        String token = jwtUtils.createJwt(category, email);
 
-        assertThat(token).isNotNull();
-    }
-
-    @Test
-    void testGetCategory() {
-        String uuid = "123e4567-e89b-12d3-a456-426614174000";
-        String category = "test";
-
-        String token = jwtUtils.createJwt(category, uuid);
-        String extractedCategory = jwtUtils.getCategory(token);
-
-        assertThat(extractedCategory).isEqualTo(category);
-    }
-
-    @Test
-    void testGetEmail() {
-        String uuid = "123e4567-e89b-12d3-a456-426614174000";
-        String category = "test";
-
-        String token = jwtUtils.createJwt(category, uuid);
-        String extractedUUID = jwtUtils.getEmail(token);
-
-        assertThat(extractedUUID).isEqualTo(uuid);
+        assertNotNull(token);
+        assertEquals(category, jwtUtils.getCategory(token));
+        assertEquals(email, jwtUtils.getEmail(token));
     }
 
     @Test
     void testIsExpired() {
-        String uuid = "123e4567-e89b-12d3-a456-426614174000";
-        String category = "test";
+        String token = jwtUtils.createJwt("user", "test@example.com");
+        assertFalse(jwtUtils.isExpired(token));
 
-        String token = jwtUtils.createJwt(category, uuid);
+        // Create an expired token
+        String expiredToken = Jwts.builder()
+                .claim("category", "user")
+                .claim("email", "test@example.com")
+                .issuedAt(new Date(System.currentTimeMillis() - 2 * 3600000)) // 2 hours ago
+                .expiration(new Date(System.currentTimeMillis() - 3600000)) // 1 hour ago
+                .signWith(secretKey)
+                .compact();
 
-        assertThat(jwtUtils.isExpired(token)).isFalse();
+        assertTrue(jwtUtils.isExpired(expiredToken));
+    }
+
+    @Test
+    void testInvalidToken() {
+        String invalidToken = "invalidToken";
+        assertTrue(jwtUtils.isExpired(invalidToken));
     }
 }
