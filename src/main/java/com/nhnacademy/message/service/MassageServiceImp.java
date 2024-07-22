@@ -19,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class MassageServiceImp implements MessageService {
+
+
     @Value("${mail.redirect.uri}")
     private String mailRedirectUri;
 
@@ -32,9 +34,7 @@ public class MassageServiceImp implements MessageService {
     public String sendRecoverMail(String email) {
         String token = jwtUtils.createJwt("recover-account", email);
         Context context = new Context();
-        context.setVariable("verification_url", mailRedirectUri + "/recover-account" +
-                "?email=" + email +
-                "&token=" + token);
+        context.setVariable("verification_url", mailRedirectUri + "/recover-account" + getAccountParam(email, token));
 
         MimeMessagePreparator preparatory = mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
@@ -53,9 +53,7 @@ public class MassageServiceImp implements MessageService {
     public String sendChangePasswordMail(String email) {
         String token = jwtUtils.createJwt("change-password", email);
         Context context = new Context();
-        context.setVariable("changeLink", mailRedirectUri + "/change-password" +
-                "?email=" + email +
-                "&token=" + token);
+        context.setVariable("changeLink", mailRedirectUri + "/change-password" + getAccountParam(email, token));
 
         MimeMessagePreparator preparatory = mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "UTF-8");
@@ -79,9 +77,7 @@ public class MassageServiceImp implements MessageService {
                 .botName("Book-Store bot")
                 .attachments(List.of(DoorayMessageRequest.Attachment.builder()
                         .title("AccountRecover")
-                        .titleLink(mailRedirectUri + "/recover-account" +
-                                "?email=" + email +
-                                "&token=" + token)
+                        .titleLink(mailRedirectUri + "/recover-account" + getAccountParam(email, token))
                         .text(email + "계정복구 Message 입니다.")
                         .build()))
                 .build());
@@ -91,5 +87,9 @@ public class MassageServiceImp implements MessageService {
     private void addHistory(String email, String token, String type) {
         redisTemplate.opsForHash().put(type, token, email);
         redisTemplate.expire(token, 2, TimeUnit.HOURS);
+    }
+
+    private String getAccountParam(String email, String token) {
+        return "?email=" + email + "&token=" + token;
     }
 }
