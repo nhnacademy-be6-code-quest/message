@@ -60,4 +60,18 @@ class MessageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(expectedResponse));
     }
+
+    @Test
+    void testSendRecoverAccountDooray() throws Exception {
+        String email = "user@example.com";
+        String expectedResponse = "Recovery Massage sent successfully.";
+
+        when(messageService.sendRecoverMessageDooray(email)).thenReturn(expectedResponse);
+
+        mockMvc.perform(get("/send/recover-account/dooray")
+                        .param("email", email)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string(expectedResponse));
+    }
 }

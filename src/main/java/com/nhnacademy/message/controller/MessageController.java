@@ -23,4 +23,10 @@ public class MessageController {
         log.info("send change password email: {}", email);
         return ResponseEntity.ok(messageService.sendChangePasswordMail(email));
     }
+
+    @GetMapping("/send/recover-account/dooray")
+    public ResponseEntity<String> sendRecoverAccountDooray(@RequestParam("email") String email) {
+        log.info("send recovery Dooray message: {}", email);
+        return ResponseEntity.ok(messageService.sendRecoverMessageDooray(email));
+    }
 }

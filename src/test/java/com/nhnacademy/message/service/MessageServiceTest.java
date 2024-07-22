@@ -1,5 +1,7 @@
 package com.nhnacademy.message.service;
 
+import com.nhnacademy.message.client.DoorayClient;
+import com.nhnacademy.message.dto.DoorayMessageRequest;
 import com.nhnacademy.message.util.JWTUtils;
 import jakarta.mail.internet.MimeMessage;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,7 @@ import org.thymeleaf.context.Context;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -25,6 +28,8 @@ class MassageServiceTest {
 
     @Mock
     private JWTUtils jwtUtils;
+    @Mock
+    private DoorayClient doorayClient;
     @Mock
     private JavaMailSender mailSender;
     @Mock
@@ -37,7 +42,7 @@ class MassageServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        massageService = new MassageServiceImp(jwtUtils, mailSender, templateEngine, redisTemplate);
+        massageService = new MassageServiceImp(jwtUtils, doorayClient, mailSender, templateEngine, redisTemplate);
         ReflectionTestUtils.setField(massageService, "mailRedirectUri", "http://localhost:8080");
         when(redisTemplate.opsForHash()).thenReturn(hashOperations);
     }
@@ -57,10 +62,12 @@ class MassageServiceTest {
             return null;
         }).when(mailSender).send(any(MimeMessagePreparator.class));
 
-        massageService.sendRecoverMail(email);
+        String result = massageService.sendRecoverMail(email);
 
         verify(hashOperations).put("recovery-account", token, email);
         verify(redisTemplate).expire(token, 2L, TimeUnit.HOURS);
+        verify(mailSender).send(any(MimeMessagePreparator.class));
+        assertEquals("이메일로 복구 메일을 전송하였습니다.", result);
     }
 
     @Test
@@ -78,9 +85,26 @@ class MassageServiceTest {
             return null;
         }).when(mailSender).send(any(MimeMessagePreparator.class));
 
-        massageService.sendChangePasswordMail(email);
+        String result = massageService.sendChangePasswordMail(email);
 
         verify(hashOperations).put("change-password", token, email);
         verify(redisTemplate).expire(token, 2L, TimeUnit.HOURS);
+        verify(mailSender).send(any(MimeMessagePreparator.class));
+        assertEquals("이메일로 변경 메일을 전송하였습니다.", result);
+    }
+
+    @Test
+    void testSendRecoverMessageDooray() {
+        String email = "test@example.com";
+        String token = "token789";
+
+        when(jwtUtils.createJwt(anyString(), anyString())).thenReturn(token);
+
+        String result = massageService.sendRecoverMessageDooray(email);
+
+        verify(hashOperations).put("recovery-account", token, email);
+        verify(redisTemplate).expire(token, 2L, TimeUnit.HOURS);
+        verify(doorayClient).sendMessage(any(DoorayMessageRequest.class));
+        assertEquals("Dooray로 복구 Message을 전송하였습니다.", result);
     }
 }
